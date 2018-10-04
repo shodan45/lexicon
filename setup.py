@@ -38,6 +38,7 @@ setup(
 
     description='Manipulate DNS records on various DNS providers in a standardized/agnostic way',
     long_description=long_description,
+    long_description_content_type="text/markdown",
 
     # The project's main homepage.
     url='https://github.com/AnalogJ/lexicon',
@@ -66,9 +67,10 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     keywords='dns lexicon dns-lexicon dehydrated letsencrypt ' + ' '.join(providers),
@@ -79,7 +81,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['requests', 'tldextract', 'future'],
+    install_requires=['requests', 'tldextract', 'future', 'cryptography'],
 
     # Each dependency group in extras_require should match a provider name
     # When adding a new depenency group here, please ensure that it has been
@@ -88,7 +90,10 @@ setup(
         'namecheap': ['PyNamecheap'],
         'route53': ['boto3'],
         'softlayer': ['SoftLayer'],
+        'subreg': ['zeep'],
         'transip': ['transip>=0.3.0'],
+        'plesk': ['xmltodict'],
+        'henet': ['beautifulsoup4'],
     },
 
     # To provide executable scripts, use entry points in preference to the

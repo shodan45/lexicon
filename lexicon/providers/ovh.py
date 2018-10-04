@@ -11,6 +11,7 @@ LOGGER = logging.getLogger(__name__)
 ENDPOINTS = {
     'ovh-eu': 'https://eu.api.ovh.com/1.0',
     'ovh-ca': 'https://ca.api.ovh.com/1.0',
+    'ovh-us': 'https://api.ovhcloud.com/1.0',
     'kimsufi-eu': 'https://eu.api.kimsufi.com/1.0',
     'kimsufi-ca': 'https://ca.api.kimsufi.com/1.0',
     'soyoustart-eu': 'https://eu.api.soyoustart.com/1.0',
@@ -48,6 +49,7 @@ class Provider(BaseProvider):
         self.domain_id = None
         self.endpoint_api = ENDPOINTS.get(self.options.get('auth_entrypoint'))
 
+    def authenticate(self):
         # All requests will be done in one HTTPS session
         self.session = requests.Session()
 
@@ -55,7 +57,7 @@ class Provider(BaseProvider):
         server_time = self.session.get('{0}/auth/time'.format(self.endpoint_api)).json()
         self.time_delta = server_time - int(time.time())
 
-    def authenticate(self):
+        # Get domain and status
         domain = self.options.get('domain')
 
         domains = self._get('/domain/zone/')
@@ -71,6 +73,12 @@ class Provider(BaseProvider):
     def create_record(self, type, name, content):
         domain = self.options.get('domain')
         ttl = self.options.get('ttl')
+
+        records = self.list_records(type, name, content)
+        for record in records:
+            if record['type'] == type and self._relative_name(record['name']) == self._relative_name(name) and record['content'] == content:
+                LOGGER.debug('create_record (ignored, duplicate): %s %s %s', type, name, content)
+                return True
 
         data = {
             'fieldType': type,

@@ -6,7 +6,14 @@ import logging
 from .base import Provider as BaseProvider
 
 try:
-    from transip.service.dns import DnsEntry
+    from transip.service.objects import DnsEntry
+except ImportError:
+    try: 
+        from transip.service.dns import DnsEntry
+    except ImportError:
+        pass
+
+try:
     from transip.service.domain import DomainService
 except ImportError:
     pass
@@ -64,6 +71,7 @@ class Provider(BaseProvider):
     # Create record. If record already exists with the same content, do nothing'
     def create_record(self, type, name, content):
         records = self.client.get_info(self.options.get('domain')).dnsEntries
+
         if self._filter_records(records, type, name, content):
             # Nothing to do, record already exists
             logger.debug('create_record: already exists')
@@ -113,7 +121,6 @@ class Provider(BaseProvider):
             "content": self._bind_format_target(type, content),
             "ttl": self.options.get('ttl')
         })
-
 
         self.client.set_dns_entries(self.options.get('domain'), self._convert_records_back(all_records))
         status = len(self.list_records(type, name, content, show_output=False)) >= 1
@@ -169,6 +176,7 @@ class Provider(BaseProvider):
 
     def _to_dns_entry(self, _entry):
         return DnsEntry(self._relative_name(_entry['name']), _entry['ttl'], _entry['type'], _entry['content'])
+
     def _convert_records_back(self, _records):
         return [self._to_dns_entry(record) for record in _records]
 
@@ -177,7 +185,7 @@ class Provider(BaseProvider):
         _records = []
         for record in records:
             if (not type or record['type'] == type) and \
-               (not name or record['name'] == self._full_name(name)) and \
+               (not name or self._full_name(record['name']) == self._full_name(name)) and \
                (not content or record['content'] == content):
                 _records.append(record)
         return _records
